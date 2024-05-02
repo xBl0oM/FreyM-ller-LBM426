@@ -2,7 +2,7 @@
 
 namespace Blackjack
 {
-    internal class Blackjack
+    internal class BlackjackClass
     {
         static void Main(string[] args)
         {
