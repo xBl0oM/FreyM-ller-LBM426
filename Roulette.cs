@@ -1,128 +1,129 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Roulette
 {
-    internal class RouletteGame
+    internal class Roulette
     {
         private readonly User _user;
         private readonly Bank _bank;
 
-        public RouletteGame(User user, Bank bank)
+        public Roulette(User user, Bank bank)
         {
             _user = user;
             _bank = bank;
         }
 
-        public void Play()
+        public void PlayRoulette()
         {
-            Console.WriteLine("Willkommen beim Roulette!");
+
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(" _______                       __              __      __               \r\n/       \\                     /  |            /  |    /  |              \r\n$$$$$$$  |  ______   __    __ $$ |  ______   _$$ |_  _$$ |_     ______  \r\n$$ |__$$ | /      \\ /  |  /  |$$ | /      \\ / $$   |/ $$   |   /      \\ \r\n$$    $$< /$$$$$$  |$$ |  $$ |$$ |/$$$$$$  |$$$$$$/ $$$$$$/   /$$$$$$  |\r\n$$$$$$$  |$$ |  $$ |$$ |  $$ |$$ |$$    $$ |  $$ | __ $$ | __ $$    $$ |\r\n$$ |  $$ |$$ \\__$$ |$$ \\__$$ |$$ |$$$$$$$$/   $$ |/  |$$ |/  |$$$$$$$$/ \r\n$$ |  $$ |$$    $$/ $$    $$/ $$ |$$       |  $$  $$/ $$  $$/ $$       |\r\n$$/   $$/  $$$$$$/   $$$$$$/  $$/  $$$$$$$/    $$$$/   $$$$/   $$$$$$$/ \r\n                                                                        \r\n                                                                        \r\n                                                                        ");
+            Console.ResetColor(); 
 
             while (true)
             {
-                Console.WriteLine("Ihr aktuelles Guthaben: " + _user.UserCredits);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Aktuelle Credits: {_user.UserCredits}");
+                Console.ResetColor();
 
-                
-                Console.WriteLine("Platzieren Sie Ihren Einsatz:");
-                int betAmount = GetBetAmount();
+                Console.WriteLine("Möchten Sie eine Wette platzieren? [ja/nein]");
+                string response = Console.ReadLine();
 
-               
-                List<string> betFields = GetBetFields();
-
-                
-                string winningField = SimulateRouletteSpin();
-
-                
-                int winnings = CalculateWinnings(betFields, winningField, betAmount);
-
-                
-                _user.UserCredits += winnings;
-
-                Console.WriteLine($"Gewonnen: {winnings} | Neues Guthaben: {_user.UserCredits}");
-
-                Console.WriteLine("Möchten Sie noch eine Runde spielen? [ja/nein]");
-                string continueResponse = Console.ReadLine();
-                if (continueResponse.ToLower() != "ja")
-                    break;
-            }
-        }
-
-        private int GetBetAmount()
-        {
-            int betAmount;
-            while (true)
-            {
-                Console.Write("Geben Sie den Betrag Ihres Einsatzes ein: ");
-                if (int.TryParse(Console.ReadLine(), out betAmount) && betAmount > 0 && betAmount <= _user.UserCredits)
-                    return betAmount;
-                Console.WriteLine("Ungültiger Betrag oder nicht genügend Guthaben.");
-            }
-        }
-
-        private List<string> GetBetFields()
-        {
-            Console.WriteLine("Platzieren Sie Ihre Wetten (z.B. Rot, Schwarz, Zahl): ");
-            string[] availableFields = { "Rot", "Schwarz", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36" };
-            List<string> betFields = new List<string>();
-
-            while (true)
-            {
-                string bet = Console.ReadLine();
-                if (availableFields.Contains(bet))
+                if (response.ToLower() == "nein")
                 {
-                    betFields.Add(bet);
-                    Console.WriteLine("Weitere Wette platzieren oder 'fertig' eingeben, um fortzufahren.");
+                    Console.WriteLine("Auf Wiedersehen!");
+                    break;
                 }
-                else if (bet.ToLower() == "fertig")
+                else if (response.ToLower() == "ja")
                 {
-                    break;
+                    PlaceBet();
                 }
                 else
                 {
-                    Console.WriteLine("Ungültige Wette. Bitte erneut eingeben.");
+                    Console.WriteLine("Ungültige Eingabe. Bitte geben Sie 'ja' oder 'nein' ein.");
                 }
             }
-
-            return betFields;
         }
 
-        private string SimulateRouletteSpin()
+        private void PlaceBet()
         {
-            
-            Random random = new Random();
-            if (random.Next(0, 2) == 0)
+            Console.WriteLine("Geben Sie den Betrag ein, den Sie setzen möchten:");
+            int betAmount;
+            while (!int.TryParse(Console.ReadLine(), out betAmount) || betAmount <= 0 || betAmount > _user.UserCredits)
             {
-                return "Rot";
+                Console.WriteLine("Ungültiger Betrag. Bitte geben Sie eine positive Zahl ein, die kleiner oder gleich Ihren aktuellen Credits ist:");
+            }
+
+            Console.WriteLine("Geben Sie die Art der Wette ein [Rot/Schwarz oder eine Zahl 1-36]:");
+            string betType = Console.ReadLine();
+
+           
+            List<string> validColors = new List<string> { "rot", "schwarz" };
+
+            if (validColors.Contains(betType.ToLower()))
+            {
+                
+                ProcessColorBet(betType, betAmount);
             }
             else
             {
-                return "Schwarz";
+               
+                int number;
+                while (!int.TryParse(betType, out number) || number < 0 || number > 36)
+                {
+                    Console.WriteLine("Ungültige Zahl. Bitte geben Sie eine Zahl zwischen 0 und 36 ein:");
+                    betType = Console.ReadLine();
+                }
+
+                ProcessNumberBet(number, betAmount);
             }
         }
 
-        private int CalculateWinnings(List<string> betFields, string winningField, int betAmount)
+        private void ProcessColorBet(string color, int betAmount)
         {
-            if (betFields.Contains(winningField))
+            Random random = new Random();
+            string[] rouletteColors = { "rot", "schwarz" };
+            string winningColor = rouletteColors[random.Next(rouletteColors.Length)];
+
+            Console.WriteLine($"Die Kugel landete auf {winningColor}.");
+
+            if (winningColor.ToLower() == color.ToLower())
             {
-                if (winningField == "Rot" || winningField == "Schwarz")
-                {
-                    return betAmount * 2; 
-                }
-                else if (int.TryParse(winningField, out int winningNumber))
-                {
-                   
-                    if (betFields.Contains(winningField))
-                    {
-                        return betAmount * 36; 
-                    }
-                    else
-                    {
-                        return 0; 
-                    }
-                }
+                int winnings = betAmount * 2;
+                Console.WriteLine($"Glückwunsch! Sie haben die richtige Farbe gewählt und gewinnen {winnings} Credits.");
+                _user.UserCredits += winnings;
+                _bank.BankCredits -= winnings;
             }
-            return -betAmount; 
+            else
+            {
+                Console.WriteLine("Leider haben Sie die falsche Farbe gewählt. Sie verlieren Ihren Einsatz.");
+                _user.UserCredits -= betAmount;
+                _bank.BankCredits += betAmount;
+            }
+        }
+
+        private void ProcessNumberBet(int number, int betAmount)
+        {
+            Random random = new Random();
+            int winningNumber = random.Next(0, 37); 
+
+            Console.WriteLine($"Die Kugel landete auf {winningNumber}.");
+
+            if (winningNumber == number)
+            {
+                int winnings = betAmount * 36;
+                Console.WriteLine($"Glückwunsch! Sie haben die richtige Zahl gewählt und gewinnen {winnings} Credits.");
+                _user.UserCredits += winnings;
+                _bank.BankCredits -= winnings;
+            }
+            else
+            {
+                Console.WriteLine("Leider haben Sie die falsche Zahl gewählt. Sie verlieren Ihren Einsatz.");
+                _user.UserCredits -= betAmount;
+                _bank.BankCredits += betAmount;
+            }
         }
     }
 }
