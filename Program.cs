@@ -10,16 +10,6 @@ namespace Roulette
     {
         static void Main(string[] args)
         {
-            User user = new User(100); 
-            Bank bank = new Bank(1000);
-            StartScreen startScreen = new StartScreen(user, bank);
-            startScreen.ConvertToCredits();
-            startScreen.SelectGame();
-
-            Console.ReadLine(); 
         }
-
     }
-
-
 }
